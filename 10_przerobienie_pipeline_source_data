@@ -1,0 +1,13 @@
+
+
+customers = [
+    {"customer_id": 1, "name": " Anna ", "country": "pl", "email": "anna@example.com"},
+    {"customer_id": 2, "name": "Jan", "country": "DE", "email": None},
+    {"customer_id": 3, "name": "Marta", "country": " fr ", "email": "marta@example.com"},
+]
+
+orders = [
+    {"order_id": 1001, "customer_id": 1, "amount": 120, "status": "paid"},
+    {"order_id": 1002, "customer_id": 2, "amount": 80, "status": "cancelled"},
+    {"order_id": 1003, "customer_id": 1, "amount": 200, "status": "paid"},
+]
