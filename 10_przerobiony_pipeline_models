@@ -1,0 +1,92 @@
+
+
+from decimal import Decimal
+
+
+class Customer:
+
+    def __init__(self, customer_id: int, name: str, country: str ="UNKNOWN", email: str ="missing_email") -> None:
+        if type(customer_id) is not int:
+            raise TypeError("customer_id must be int")
+        if customer_id < 0:
+            raise ValueError("customer_id must be positive")
+        if type(name) is not str:
+            raise TypeError("name must be str")
+        if name.strip() == "":
+            raise ValueError("name cant be empty")
+        if type(country) is not str:
+            raise TypeError("country must be str")
+        if country.strip() == "":
+            country = "UNKNOWN"
+        if type(email) is not str:
+            raise TypeError("email must be text")
+        if email.strip() == "":
+            email = "missing_email"
+        self.customer_id = customer_id
+        self.name = name.strip()
+        self.country = country.strip().upper()
+        self.email = email.strip().lower()
+
+    def is_core_market(self) -> bool:
+        return self.country in ("PL", "DE")
+
+    @classmethod
+    def from_raw(cls, raw: dict) -> "Customer":
+        raw_id = raw["customer_id"]
+        name = raw["name"]
+        country = raw.get("country", "UNKNOWN")
+        email = raw.get("email", "missing_email")
+        if type(raw_id) is not int:
+            raise TypeError("id must be int")
+        if type(name) is not str:
+            raise TypeError("name must be text")
+        if country is None:
+            country = "UNKNOWN"
+        if email is None:
+            email = "missing_email"
+        return cls(int(raw_id), name, country, email)
+
+
+
+class PaymentOrder:
+    def __init__(self, order_id: int, customer_id: int, amount: Decimal, status: str) -> None:
+        if type(order_id) is not int or type(customer_id) is not int:
+            raise TypeError("IDs must be int")
+        if order_id < 0 or customer_id < 0:
+            raise ValueError("IDs must be positive")
+        if not isinstance(amount, Decimal):
+            raise TypeError("amount must be Decimal")
+        if not amount.is_finite() or amount < 0:
+            raise ValueError("amount must be finite and positive")
+        if status.strip().lower() not in ("paid", "pending", "cancelled"):
+            raise ValueError("wrong status name")
+        self.order_id = order_id
+        self.customer_id = customer_id
+        self.amount = amount
+        self.status = status.strip().lower()
+
+    def is_paid(self) -> bool:
+        return self.status == "paid"
+
+    def mark_paid(self) -> str:
+        if self.status == "cancelled":
+            raise ValueError("status is cancelled")
+        self.status = "paid"
+
+class PaymentBatch:
+    def __init__(self, source: str) -> None:
+        self.source = source
+        self.orders = []
+
+    def add(self, order) -> None:
+        if not isinstance(order, PaymentOrder):
+            raise TypeError("order must be PaymentOrder")
+        self.orders.append(order)
+
+    def paid_revenue(self) -> Decimal:
+        return sum((order.amount for order in self.orders if order.status == "paid"), Decimal("0"))
+
+
+
+
+
