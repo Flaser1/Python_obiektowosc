@@ -1,0 +1,189 @@
+
+from decimal import Decimal
+
+
+class Customer:
+    def __init__(self, customer_id: int, name: str, country: str ="UNKNOWN") -> None:
+        if type(customer_id) is not int:
+            raise TypeError("customer_id must be int")
+        if customer_id < 0:
+            raise ValueError("customer_id must be positive")
+        if type(name) is not str:
+            raise TypeError("name must be str")
+        if name.strip() == "":
+            raise ValueError("name cant be empty")
+        if type(country) is not str:
+            raise TypeError("country must be str")
+        if country.strip() == "":
+            country = "UNKNOWN"
+        self.customer_id = customer_id
+        self.name = name
+        self.country = country.strip().upper()
+
+    def is_core_market(self) -> bool:
+        return self.country in ("PL" or "DE")
+
+customer = Customer(10, "Zenek", "")
+customer1 = Customer(9, "Robert", "PL")
+customer2 = Customer(17, "Lamine", "ES")
+print(customer.country)
+print(customer1.is_core_market())
+print(customer2.is_core_market())
+
+
+class Product:
+    def __init__(self, sku: str, unit_price: Decimal) -> None:
+        if not isinstance(sku, str):
+            raise TypeError("sku must be text")
+        if sku.strip() == "":
+            raise ValueError("sku cant be empty")
+        if not isinstance(unit_price, Decimal):
+            raise TypeError("unit_price must be Decimal")
+        if not unit_price.is_finite() or unit_price < 0:
+            raise ValueError("unit_price must be finite and positive")
+        self.sku = sku.strip().upper()
+        self.unit_price = unit_price
+
+    def line_value(self, quantity: int) -> int:
+        if type(quantity) is not int:
+            raise TypeError("quantity must be int")
+        self.quantity = quantity
+        return self.unit_price * self.quantity
+
+    def __repr__(self) -> str:
+        return f"SKU={self.sku} unit_price={self.unit_price}"
+
+sql = Product("SQL", Decimal("49.90"))
+sql1 = Product("SQL", Decimal("0"))
+#sql2 = Product("SQL", Decimal("-1"))
+#sql.line_value(True)
+print(sql.line_value(2))
+
+class PaymentOrder:
+    def __init__(self, order_id: int, amount: Decimal, status: str) -> None:
+        if type(order_id) is not int:
+            raise TypeError("order_id must be int")
+        if order_id < 0:
+            raise ValueError("order_id must be positive")
+        if not isinstance(amount, Decimal):
+            raise TypeError("amount must be Decimal")
+        if not amount.is_finite() or amount < 0:
+            raise ValueError("amount must be finite and positive")
+        if status.strip().lower() not in ("paid", "pending", "cancelled"):
+            raise ValueError("wrong status name")
+        self.order_id = order_id
+        self.amount = amount
+        self.status = status.strip().lower()
+
+    def is_paid(self) -> bool:
+        return self.status == "paid"
+
+    def mark_paid(self) -> str:
+        if self.status == "cancelled":
+            raise ValueError("status is cancelled")
+        self.status = "paid"
+
+order = PaymentOrder(1, Decimal("0"), "pending")
+print(order.is_paid())
+order.mark_paid()
+print(order.status)
+
+class PaymentBatch:
+    def __init__(self, source: str) -> None:
+        self.source = source
+        self.orders = []
+
+    def add(self, order) -> None:
+        if not isinstance(order, PaymentOrder):
+            raise TypeError("order must be PaymentOrder")
+        self.orders.append(order)
+
+    def paid_revenue(self) -> Decimal:
+        return sum((order.amount for order in self.orders if order.status == "paid"), Decimal("0"))
+
+web = PaymentBatch("web")
+mobile = PaymentBatch("mobile")
+order1 = PaymentOrder(1, Decimal("20"), "pending")
+order2 = PaymentOrder(2, Decimal("0"), "paid")
+web.add(order1)
+web.add(order2)
+print(web.paid_revenue())
+order1.mark_paid()
+print(web.paid_revenue())
+
+customer = Customer(72, "Julka", "PL")
+customer1 = customer
+independent = Customer(72, "Julka", "PL")
+customer1.country = "DE"
+print(customer1.country)
+print(independent.country)
+print(customer1 is customer)
+print(independent is customer)
+
+
+def unit_price_desc_sku_asc(product: tuple) -> tuple:
+    return (-product.unit_price, product.sku)
+
+py = Product("PY", Decimal("80"))
+sql = Product("SQL", Decimal("50"))
+api = Product("API", Decimal("80"))
+
+products = [py, sql, api]
+sorted_products = sorted(products, key=unit_price_desc_sku_asc)
+print(products)
+print(sorted_products)
+
+products_report = []
+
+for sorted_product in sorted_products:
+    products_report.append({
+        "sku": sorted_product.sku,
+        "unit_price": sorted_product.unit_price,
+        })
+
+print(products_report)
+products_report[0]["unit_price"] = Decimal("40")
+print(products)
+print(products_report)
+
+
+class Customer:
+
+    def __init__(self, customer_id: int, name: str, country: str ="UNKNOWN") -> None:
+        if type(customer_id) is not int:
+            raise TypeError("customer_id must be int")
+        if customer_id < 0:
+            raise ValueError("customer_id must be positive")
+        if type(name) is not str:
+            raise TypeError("name must be str")
+        if name.strip() == "":
+            raise ValueError("name cant be empty")
+        if type(country) is not str:
+            raise TypeError("country must be str")
+        if country.strip() == "":
+            country = "UNKNOWN"
+        self.customer_id = customer_id
+        self.name = name.strip()
+        self.country = country.strip().upper()
+
+    def is_core_market(self) -> bool:
+        return self.country in ("PL", "DE")
+
+    @classmethod
+    def from_raw(cls, raw: dict) -> "Customer":
+        raw_id = raw["id"]
+        name = raw["name"]
+        country = raw.get("country", "UNKNOWN")
+        if type(raw_id) is not str or type(name) is not str:
+            raise TypeError("id and name must be text")
+        if country is None:
+            country = "UNKNOWN"
+        return cls(int(raw_id), name, country)
+
+customer3 = Customer.from_raw({"id": "7", "name": " Anna ", "country": " pl "})
+#customer4 = Customer.from_raw({"name": " Anna ", "country": " pl "})
+#customer5 = Customer.from_raw({"id": 1, "name": " Anna ", "country": " pl "})
+customer6 = Customer.from_raw({"id": "7", "name": " Anna ", "country": ""})
+print(customer6.country)
+
+
