@@ -1,0 +1,35 @@
+
+
+from models import PaymentBatch
+from source_data import raw_orders
+from transformations import order_from_raw
+
+
+def parse_orders(orders_raw: list[dict]) -> tuple[list[dict], PaymentBatch]:
+    invalid_orders = []
+    orders = PaymentBatch("raw_orders")
+
+    for index, raw_order in enumerate(orders_raw, start=1):
+        try:
+            order = order_from_raw(raw_order)
+        except (KeyError, ValueError, TypeError) as exc:
+            invalid_orders.append({
+                "row_number": index,
+                "raw_id": raw_order.get("id"),
+                "reason": f"{exc}",
+            })
+            continue
+        orders.add(order)
+    return invalid_orders, orders
+
+
+def main():
+    invalid_orders, orders = parse_orders(raw_orders)
+    print(f"valid orders: {len(orders.orders)}")
+    print(f"invalid orders: {len(invalid_orders)}")
+    print(f"paid_revenue: {orders.paid_revenue()}")
+    print(invalid_orders)
+
+
+if __name__ == "__main__":
+    main()
