@@ -1,6 +1,7 @@
 
 
-from models import Customer
+from models import Customer, PaymentOrder
+from decimal import Decimal
 
 def normalize_customers(customers: list[dict]) -> list[Customer]:
     clean_customers = []
@@ -27,3 +28,10 @@ def build_customer_objects(customer_dicts: list[dict]) -> list[Customer]:
         customer_obj = Customer(customer["customer_id"], customer["name"], customer["country"], customer["email"])
         customer_obj_list.append(customer_obj)
     return customer_obj_list
+
+def build_order_objects(order_dicts: list[dict]) -> list[PaymentOrder]:
+    order_obj_list = []
+    for order in order_dicts:
+        order_obj = PaymentOrder(order["order_id"], order["customer_id"], Decimal(order["amount"]), order["status"])
+        order_obj_list.append(order_obj)
+    return order_obj_list
