@@ -1,0 +1,14 @@
+
+
+from source_data import customers, orders
+from transformations import normalize_customers
+from metrics import build_country_report
+from reporting import print_country_report
+
+def main():
+    clean_customers = normalize_customers(customers)
+    report = build_country_report(clean_customers, orders)
+    print_country_report(report)
+
+if __name__ == "__main__":
+    main()
