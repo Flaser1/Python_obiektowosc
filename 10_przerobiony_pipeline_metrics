@@ -1,6 +1,6 @@
 
 
-from models import Customer, PaymentOrder, PaymentBatch
+from models import Customer, PaymentOrder
 
 def get_customer_orders(customer_id: int, orders: list[PaymentOrder]) -> list[dict]:
     orders_by_customer = [order for order in orders if customer_id == order.customer_id]
