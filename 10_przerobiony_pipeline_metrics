@@ -1,0 +1,72 @@
+
+
+from models import Customer, PaymentOrder, PaymentBatch
+
+def get_customer_orders(customer_id: int, orders: list[PaymentOrder]) -> list[dict]:
+    orders_by_customer = [order for order in orders if customer_id == order.customer_id]
+    return orders_by_customer
+
+
+def build_customer_summary(customer: Customer, orders: list[PaymentOrder]) -> dict:
+    customer_id = customer.customer_id
+    customer_name = customer.name
+    customer_orders = get_customer_orders(customer_id, orders)
+    orders_count = len(customer_orders)
+    paid_revenue = sum(
+        order.amount for order in customer_orders if order.status == "paid"
+    )
+
+    return {
+        "customer_id": customer_id,
+        "name": customer_name,
+        "orders_count": orders_count,
+        "paid_revenue": paid_revenue
+    }
+
+
+def build_all_summaries(customers: list[Customer], orders: list[PaymentOrder]) -> list[dict]:
+    summaries = []
+    for customer in customers:
+        summary = build_customer_summary(customer, orders)
+
+        summaries.append({
+            **summary,
+            "country": customer.country,
+            "customer_status": "buyer" if summary["orders_count"] > 0 else "no_orders",
+        })
+    return sorted(summaries, key=lambda s: (-s["paid_revenue"], s["customer_id"]))
+
+
+def build_country_report(customers: list[Customer], orders: list[PaymentOrder]) -> dict:
+    countries_summary = {}
+    paying_customers = {}
+    for customer in customers:
+        country = customer.country
+        if country not in countries_summary:
+            countries_summary[country] = {
+                "customers_count": 0,
+                "paying_customers_count": 0,
+                "paid_orders_count": 0,
+                "paid_revenue": 0,
+            }
+            paying_customers[country] = set()
+        countries_summary[country]["customers_count"] += 1
+
+    customer_country = {customer.customer_id: customer.country for customer in customers}
+    for order in orders:
+        if order.status != "paid":
+            continue
+        customer_id = order.customer_id
+        country = customer_country.get(customer_id)
+        if country is None:
+            continue
+        countries_summary[country]["paid_orders_count"] += 1
+        countries_summary[country]["paid_revenue"] += order.amount
+        paying_customers[country].add(customer_id)
+
+    for country in countries_summary:
+        countries_summary[country]["paying_customers_count"] = len(paying_customers[country])
+
+    return countries_summary
+
+
