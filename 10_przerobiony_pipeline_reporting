@@ -1,0 +1,5 @@
+
+
+def print_country_report(report: dict) -> None:
+    for country in sorted(report):
+        print(country, report[country])
