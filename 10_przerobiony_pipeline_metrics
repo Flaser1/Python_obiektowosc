@@ -1,6 +1,6 @@
 
 
-from models import Customer, PaymentOrder
+from models import Customer, PaymentOrder, PaymentBatch
 
 def get_customer_orders(customer_id: int, orders: list[PaymentOrder]) -> list[dict]:
     orders_by_customer = [order for order in orders if customer_id == order.customer_id]
@@ -10,11 +10,13 @@ def get_customer_orders(customer_id: int, orders: list[PaymentOrder]) -> list[di
 def build_customer_summary(customer: Customer, orders: list[PaymentOrder]) -> dict:
     customer_id = customer.customer_id
     customer_name = customer.name
+    orders_batch = PaymentBatch("orders")
+    for order in orders:
+        if order.customer_id == customer.customer_id:
+            orders_batch.add(order)
+    paid_revenue = orders_batch.paid_revenue()
     customer_orders = get_customer_orders(customer_id, orders)
     orders_count = len(customer_orders)
-    paid_revenue = sum(
-        order.amount for order in customer_orders if order.status == "paid"
-    )
 
     return {
         "customer_id": customer_id,
