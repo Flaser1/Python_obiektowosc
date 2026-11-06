@@ -8,7 +8,9 @@ from reporting import print_country_report
 def main():
     clean_customers = normalize_customers(customers)
     obj_orders = build_order_objects(orders)
+    summary = build_customer_summary(clean_customers[0], obj_orders)
     report = build_country_report(clean_customers, obj_orders)
+    print(summary)
     print_country_report(report)
 
 if __name__ == "__main__":
