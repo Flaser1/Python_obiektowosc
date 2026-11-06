@@ -6,21 +6,33 @@ from decimal import Decimal
 def normalize_customers(customers: list[dict]) -> list[Customer]:
     clean_customers = []
     for customer in customers:
-        customer_id = customer["customer_id"]
-        clean_name = customer["name"].strip()
-        clean_country = customer["country"].strip().upper()
+        customer_id = int(customer["customer_id"])
         if customer["email"] is None:
             clean_email = "missing_email"
         else:
-            clean_email = customer["email"].strip().lower()
+            clean_email = customer["email"]
         clean_customer = {
             "customer_id": customer_id,
-            "name": clean_name,
-            "country": clean_country,
+            "name": customer["name"],
+            "country": customer["country"],
             "email": clean_email,
         }
         clean_customers.append(clean_customer)
     return build_customer_objects(clean_customers)
+
+def normalize_orders(orders: list[dict]) -> list[PaymentOrder]:
+    clean_orders = []
+    for order in orders:
+        order_id = int(order["order_id"])
+        customer_id = int(order["customer_id"])
+        clean_order = {
+            "order_id": order_id,
+            "customer_id": customer_id,
+            "amount": order["amount"],
+            "status": order["status"],
+        }
+        clean_orders.append(clean_order)
+    return build_order_objects(clean_orders)
 
 def build_customer_objects(customer_dicts: list[dict]) -> list[Customer]:
     customer_obj_list = []
