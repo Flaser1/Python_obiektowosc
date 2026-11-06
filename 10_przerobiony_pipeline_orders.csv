@@ -1,0 +1,4 @@
+order_id;customer_id;amount;status
+1001;1;120;paid
+1002;2;80;cancelled
+1003;1;200;paid
