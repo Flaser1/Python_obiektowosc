@@ -1,0 +1,4 @@
+customer_id;name;country;email
+1; Anna ;pl;anna@example.com
+2;Jan;DE;
+3;Marta; fr ;marta@example.com
