@@ -1,16 +1,23 @@
 
 
-from source_data import customers, orders
-from transformations import normalize_customers, build_order_objects
+from transformations import normalize_customers, normalize_orders
 from metrics import build_country_report, build_customer_summary, build_all_summaries
 from reporting import print_country_report
+from config import load_config_customers, load_config_orders
+from pipeline import run_pipeline
 
 def main():
-    clean_customers = normalize_customers(customers)
-    obj_orders = build_order_objects(orders)
-    summary = build_customer_summary(clean_customers[0], obj_orders)
+    config_customers = load_config_customers()
+    config_orders = load_config_orders()
+    customers_csv_raw = run_pipeline(config_customers.input_path, config_customers.output_dir)
+    orders_csv_raw = run_pipeline(config_orders.input_path, config_orders.output_dir)
+    clean_customers = normalize_customers(customers_csv_raw)
+    obj_orders = normalize_orders(orders_csv_raw)
+    customer_summary = build_customer_summary(clean_customers[0], obj_orders)
+    summaries = build_all_summaries(clean_customers, obj_orders)
     report = build_country_report(clean_customers, obj_orders)
-    print(summary)
+    print(customer_summary)
+    print(summaries)
     print_country_report(report)
 
 if __name__ == "__main__":
